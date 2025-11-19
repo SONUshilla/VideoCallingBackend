@@ -95,7 +95,7 @@ initializeMediaSoup().then(({ worker, router }) => {
     socket.on("create-send-transport", async (callback) => {
       try {
         const transport = await router.createWebRtcTransport({
-          listenIps: [{ ip: "0.0.0.0", announcedIp: "127.0.0.1" }], // Use your actual IP in production
+          listenIps: [{ ip: "0.0.0.0", announcedIp: "videocallingfrontend-5s8t.onrender.com" }], // Use your actual IP in production
           enableUdp: true,
           enableTcp: true,
           preferUdp: true,
@@ -180,7 +180,7 @@ initializeMediaSoup().then(({ worker, router }) => {
     socket.on("create-recv-transport", async (callback) => {
       try {
         const transport = await router.createWebRtcTransport({
-          listenIps: [{ ip: "0.0.0.0", announcedIp: "127.0.0.1" }], // Use your actual IP in production
+          listenIps: [{ ip: "0.0.0.0", announcedIp: "videocallingfrontend-5s8t.onrender.com" }], // Use your actual IP in production
           enableUdp: true,
           enableTcp: true,
           preferUdp: true,
