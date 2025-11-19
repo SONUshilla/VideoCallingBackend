@@ -95,16 +95,23 @@ initializeMediaSoup().then(({ worker, router }) => {
     socket.on("create-send-transport", async (callback) => {
       try {
         const transport = await router.createWebRtcTransport({
-          listenIps: [{ ip: "0.0.0.0", announcedIp: "videocallingfrontend-5s8t.onrender.com" }], // Use your actual IP in production
+          listenIps: [{ ip: "0.0.0.0", announcedIp: "videocallingbackend-ftll.onrender.com" }], // Use your actual IP in production
           enableUdp: true,
           enableTcp: true,
           preferUdp: true,
+          iceLite:false,
           initialAvailableOutgoingBitrate: 1000000
         });
 
         const userSession = userSessions.get(socket.id);
         userSession.transports.set("send", transport);
-
+        transport.on("dtlsstatechange", (dtlsState) => {
+          console.log("Server recv transport DTLS state:", dtlsState);
+          if (dtlsState === "failed") {
+            console.error("SERVER ERROR: DTLS failed");
+          }
+        });
+        
         // Handle produce event from client
         socket.on("produce", async ({ kind, rtpParameters }, callback, errback) => {
           try {
@@ -135,7 +142,7 @@ initializeMediaSoup().then(({ worker, router }) => {
             callback({ id: producer.id });
           } catch (error) {
             console.error("Error in produce:", error);
-            errback(error);
+            callback({error:error});
           }
         });
 
@@ -180,10 +187,11 @@ initializeMediaSoup().then(({ worker, router }) => {
     socket.on("create-recv-transport", async (callback) => {
       try {
         const transport = await router.createWebRtcTransport({
-          listenIps: [{ ip: "0.0.0.0", announcedIp: "videocallingfrontend-5s8t.onrender.com" }], // Use your actual IP in production
+          listenIps: [{ ip: "0.0.0.0", announcedIp: "videocallingbackend-ftll.onrender.com" }], // Use your actual IP in production
           enableUdp: true,
           enableTcp: true,
           preferUdp: true,
+          iceLite:false,
           initialAvailableOutgoingBitrate: 1000000
         });
 
@@ -205,7 +213,8 @@ initializeMediaSoup().then(({ worker, router }) => {
     socket.on("connect-recv-transport", async ({ dtlsParameters }, callback) => {
       try {
         console.log(`Recv Transport connect attempt for socket: ${socket.id}`);
-        
+        console.log("Server received dtlsParameters:", dtlsParameters);
+
         const userSession = userSessions.get(socket.id);
         const transport = userSession.transports.get("recv");
         
@@ -215,6 +224,7 @@ initializeMediaSoup().then(({ worker, router }) => {
 
         await transport.connect({ dtlsParameters });
         console.log(`recv Transport connected successfully for socket: ${socket.id}`);
+        console.log("Current DTLS state:", transport.dtlsState);
         if (callback) callback({ status: "ok" });
       } catch (error) {
         console.error("Error connecting transport:", error);
