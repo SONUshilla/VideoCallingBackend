@@ -9,13 +9,13 @@ export const tranportHandlers = async (socket, roomId, profilePic, name,audioLev
   socket.hasHandlers = true;
 
   // Join Socket.IO room
-  const { router, userSessions, producers, existingUsers } =getContext(roomId);
+  const { router, userSessions, producers, existingUsers,host } =getContext(roomId);
 
   // 2. Create WebRTC send transport
   socket.on("create-send-transport", async (callback) => {
     try {
       const transport = await router.createWebRtcTransport({
-        listenIps: [{ ip: "0.0.0.0", announcedIp: "127.0.0.1" }], // Use your actual IP in production
+        listenIps: [{ ip: "0.0.0.0", announcedIp: "72.61.115.157" }], // Use your actual IP in production
         enableUdp: true,
         enableTcp: true,
         preferUdp: true,
@@ -138,7 +138,7 @@ export const tranportHandlers = async (socket, roomId, profilePic, name,audioLev
   socket.on("create-recv-transport", async (callback) => {
     try {
       const transport = await router.createWebRtcTransport({
-        listenIps: [{ ip: "0.0.0.0", announcedIp: "127.0.0.1" }], // Use your actual IP in production
+        listenIps: [{ ip: "0.0.0.0", announcedIp: "72.61.115.157" }], // Use your actual IP in production
         enableUdp: true,
         enableTcp: true,
         preferUdp: true,
@@ -204,6 +204,7 @@ export const tranportHandlers = async (socket, roomId, profilePic, name,audioLev
       }));
   
     if (othersProducers.length > 0) {
+      console.log("host id is ",host)
       socket.emit("existingProducers", {
         producers: othersProducers,
       });
@@ -313,7 +314,7 @@ socket.on("get-existing-users", () => {
     .filter(user => user.socketId !== socket.id); // exclude own socket
 
   // Send existing users to the newly joined socket
-  socket.emit("existingUsers", { existingUsers: usersArray });
+  socket.emit("existingUsers", { existingUsers: usersArray,hostId:host});
 });
 
 socket.on("screenShareStopped", ({ producerId}) => {

@@ -18,7 +18,8 @@ export const getContext = (roomId) => {
       userSessions:room.userSessions,
       producers: room.producers,
       audioLevelObserver:room.audioLevelObserver,
-      existingUsers:room.existingUsers
+      existingUsers:room.existingUsers,
+      host:room.host
     };
   };
 

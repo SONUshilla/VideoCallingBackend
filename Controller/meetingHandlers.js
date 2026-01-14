@@ -122,6 +122,7 @@ export const registerMeetingHandlers = (socket) => {
           producers: new Map(),
           audioLevelObserver,
           existingUsers: new Map(),
+          host:socket.id
         });
       }
 
