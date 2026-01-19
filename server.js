@@ -38,6 +38,17 @@ async function initializeMediaSoup()
   const worker=await getWorker();
 }
 
+// server.js
+
+// Check .env for a flag (default to false if missing)
+// In .env, add: SHOW_LOGS=true (for dev) or SHOW_LOGS=false (for prod)
+const shouldLog = process.env.SHOW_LOGS === 'true';
+
+if (!shouldLog) {
+  console.log = function() {};
+  // console.warn = function() {};
+}
+
 // Initialize mediasoup and start server
 initializeMediaSoup().then(() => {
   io.on("connection", async (socket) => {

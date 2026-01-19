@@ -15,7 +15,7 @@ export const tranportHandlers = async (socket, roomId, profilePic, name,audioLev
   socket.on("create-send-transport", async (callback) => {
     try {
       const transport = await router.createWebRtcTransport({
-        listenIps: [{ ip: "0.0.0.0", announcedIp: "72.61.115.157" }], // Use your actual IP in production
+        listenIps: [{ ip: "0.0.0.0", announcedIp: process.env.ANNOUNCED_IP }], // Use your actual IP in production
         enableUdp: true,
         enableTcp: true,
         preferUdp: true,
@@ -137,27 +137,42 @@ export const tranportHandlers = async (socket, roomId, profilePic, name,audioLev
 
   socket.on("create-recv-transport", async (callback) => {
     try {
+      // 1. Check if session exists BEFORE doing anything heavy
+      const userSession = userSessions.get(socket.id);
+      
+      if (!userSession) {
+        console.warn(`User session not found for socket: ${socket.id}`);
+        if (callback) {
+          return callback({ error: "User session does not exist. Please join the room first." });
+        }
+        return;
+      }
+  
+      // 2. Create the transport
       const transport = await router.createWebRtcTransport({
-        listenIps: [{ ip: "0.0.0.0", announcedIp: "72.61.115.157" }], // Use your actual IP in production
+        listenIps: [{ ip: "0.0.0.0", announcedIp: process.env.ANNOUNCED_IP }],
         enableUdp: true,
         enableTcp: true,
         preferUdp: true,
         iceLite: false,
         initialAvailableOutgoingBitrate: 1000000,
       });
-
-      const userSession = userSessions.get(socket.id);
+  
+      // 3. Store transport (Now safe because we checked userSession exists)
       userSession.transports.set("recv", transport);
+  
       const transportParams = {
         id: transport.id,
         iceParameters: transport.iceParameters,
         iceCandidates: transport.iceCandidates,
         dtlsParameters: transport.dtlsParameters,
       };
+  
       if (callback) callback(transportParams);
     } catch (error) {
       console.error("Error creating recv transport:", error);
-      if (callback) callback({ status: "error", error: error.message });
+      // Return a clean error object so client logic can handle it
+      if (callback) callback({ error: error.message });
     }
   });
   socket.on("connect-recv-transport", async ({ dtlsParameters }, callback) => {
